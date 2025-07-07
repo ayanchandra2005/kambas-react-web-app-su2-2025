@@ -102,7 +102,7 @@ export default function AssignmentEditor() {
             <input
               id="wd-available-until"
               type="date"
-              defaultValue="2025-07-09"
+              defaultValue="2025-07-08"
             />
           </td>
         </tr>
