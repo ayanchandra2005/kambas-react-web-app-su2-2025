@@ -1,12 +1,19 @@
-import { Form, Button, Row, Col } from "react-bootstrap";
+import { Form, Row, Col } from "react-bootstrap";
+import { useParams, Link } from "react-router-dom";
+import * as db from "../../Database";
 
 export default function AssignmentEditor() {
+  const { cid, aid } = useParams();
+  const assignment = db.assignments.find(
+    (a) => a._id === aid && a.course === cid
+  );
+
   return (
     <div id="wd-assignments-editor" className="p-4">
       <Form>
         <Form.Group className="mb-3" controlId="wd-name">
           <Form.Label>Assignment Name</Form.Label>
-          <Form.Control type="text" defaultValue="A1" />
+          <Form.Control type="text" defaultValue={assignment?.title || ""} />
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="wd-description">
@@ -87,7 +94,10 @@ export default function AssignmentEditor() {
           <Col md={4}>
             <Form.Group controlId="wd-due-date">
               <Form.Label>Due</Form.Label>
-              <Form.Control type="datetime-local" defaultValue="2025-07-07T23:59" />
+              <Form.Control
+                type="datetime-local"
+                defaultValue="2025-07-07T23:59"
+              />
             </Form.Group>
           </Col>
           <Col md={4}>
@@ -111,8 +121,18 @@ export default function AssignmentEditor() {
         </Row>
 
         <div className="d-flex justify-content-end gap-2">
-          <Button variant="secondary">Cancel</Button>
-          <Button variant="danger">Save</Button>
+          <Link
+            to={`/Kambaz/Courses/${cid}/Assignments`}
+            className="btn btn-secondary"
+          >
+            Cancel
+          </Link>
+          <Link
+            to={`/Kambaz/Courses/${cid}/Assignments`}
+            className="btn btn-danger"
+          >
+            Save
+          </Link>
         </div>
       </Form>
     </div>

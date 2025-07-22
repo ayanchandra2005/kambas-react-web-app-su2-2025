@@ -1,9 +1,14 @@
+import { useParams } from "react-router-dom";
 import { Button, FormControl, InputGroup, ListGroup } from "react-bootstrap";
 import { FaSearch, FaPlus, FaCheckCircle, FaRegFileAlt } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { RxDragHandleDots2 } from "react-icons/rx";
+import * as db from "../../Database";
 
 export default function Assignments() {
+  const { cid } = useParams();
+  const assignments = db.assignments.filter((a) => a.course === cid);
+
   return (
     <div id="wd-assignments" className="p-4">
       {/* Search and Buttons */}
@@ -44,9 +49,9 @@ export default function Assignments() {
 
       {/* Assignment List */}
       <ListGroup variant="flush">
-        {[1, 2, 3].map((num) => (
+        {assignments.map((a) => (
           <ListGroup.Item
-            key={num}
+            key={a._id}
             className="d-flex justify-content-between align-items-start px-3 py-2"
             style={{
               borderLeft: "4px solid green",
@@ -60,18 +65,14 @@ export default function Assignments() {
               <FaRegFileAlt className="text-success mt-1" />
               <div>
                 <a
-                  href={`#/Kambaz/Courses/1234/Assignments/${num * 111}`}
+                  href={`#/Kambaz/Courses/${cid}/Assignments/${a._id}`}
                   className="fw-bold text-decoration-none text-dark"
                 >
-                  A{num}
+                  {a.title}
                 </a>
                 <div className="text-muted small">
                   <span className="text-danger">Multiple Modules</span> |{" "}
-                  <b>Not available until</b>{" "}
-                  {num === 1 ? "May 6" : num === 2 ? "May 13" : "May 20"} at
-                  12:00am | <b>Due</b>{" "}
-                  {num === 1 ? "May 13" : num === 2 ? "May 20" : "May 27"} at
-                  11:59pm | 100 pts
+                  <b>Not available until</b> TBD | <b>Due</b> TBD | 100 pts
                 </div>
               </div>
             </div>
