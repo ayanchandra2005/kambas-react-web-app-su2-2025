@@ -1,17 +1,40 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Button, FormControl, InputGroup, ListGroup } from "react-bootstrap";
-import { FaSearch, FaPlus, FaCheckCircle, FaRegFileAlt } from "react-icons/fa";
+import { FaSearch, FaPlus, FaCheckCircle, FaRegFileAlt, FaTrash } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { RxDragHandleDots2 } from "react-icons/rx";
-import * as db from "../../Database";
+import { useSelector, useDispatch } from "react-redux";
+import { deleteAssignment } from "./reducer";
+
+function formatDateTime(dateString: string) {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  };
+  return date.toLocaleString("en-US", options).replace(",", " at");
+}
 
 export default function Assignments() {
   const { cid } = useParams();
-  const assignments = db.assignments.filter((a) => a.course === cid);
+  const dispatch = useDispatch();
+
+  const assignments = useSelector((state: any) =>
+    state.assignmentsReducer.assignments.filter((a: any) => a.course === cid)
+  );
+
+  const handleDelete = (aid: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this assignment?");
+    if (confirmDelete) {
+      dispatch(deleteAssignment(aid));
+    }
+  };
 
   return (
     <div id="wd-assignments" className="p-4">
-      {/* Search and Buttons */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <InputGroup style={{ maxWidth: "300px" }}>
           <InputGroup.Text>
@@ -28,14 +51,16 @@ export default function Assignments() {
             <FaPlus className="me-1" />
             Group
           </Button>
-          <Button variant="danger">
+          <Link
+            to={`/Kambaz/Courses/${cid}/Assignments/Editor`}
+            className="btn btn-danger"
+          >
             <FaPlus className="me-1" />
             Assignment
-          </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Assignment Header */}
       <div className="d-flex justify-content-between align-items-center bg-light p-2 border">
         <div className="fw-bold d-flex align-items-center gap-2">
           <RxDragHandleDots2 />
@@ -47,9 +72,8 @@ export default function Assignments() {
         </div>
       </div>
 
-      {/* Assignment List */}
       <ListGroup variant="flush">
-        {assignments.map((a) => (
+        {assignments.map((a: any) => (
           <ListGroup.Item
             key={a._id}
             className="d-flex justify-content-between align-items-start px-3 py-2"
@@ -72,12 +96,20 @@ export default function Assignments() {
                 </a>
                 <div className="text-muted small">
                   <span className="text-danger">Multiple Modules</span> |{" "}
-                  <b>Not available until</b> TBD | <b>Due</b> TBD | 100 pts
+                  <b>Not available until</b>{" "}
+                  {a.availableFrom ? formatDateTime(a.availableFrom) : "TBD"} |{" "}
+                  <b>Due</b> {a.due ? formatDateTime(a.due) : "TBD"} |{" "}
+                  {a.points || 100} pts
                 </div>
               </div>
             </div>
             <div className="d-flex align-items-start gap-2 pt-1">
               <FaCheckCircle color="green" />
+              <FaTrash
+                className="text-danger"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleDelete(a._id)}
+              />
               <BsThreeDotsVertical />
             </div>
           </ListGroup.Item>

@@ -1,19 +1,68 @@
-import { Form, Row, Col } from "react-bootstrap";
-import { useParams, Link } from "react-router-dom";
-import * as db from "../../Database";
+import { Form, Row, Col, Button } from "react-bootstrap";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { addAssignment, updateAssignment } from "./reducer";
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
-  const assignment = db.assignments.find(
-    (a) => a._id === aid && a.course === cid
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const existingAssignment = useSelector((state: any) =>
+    state.assignmentsReducer.assignments.find((a: any) => a._id === aid)
   );
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [points, setPoints] = useState(100);
+  const [due, setDue] = useState("2025-07-07T23:59");
+  const [availableFrom, setAvailableFrom] = useState("2025-07-07T00:00");
+  const [availableUntil, setAvailableUntil] = useState("2025-07-10T23:59");
+
+  useEffect(() => {
+    if (existingAssignment) {
+      setTitle(existingAssignment.title);
+      setDescription(existingAssignment.description);
+      setPoints(existingAssignment.points);
+      setDue(existingAssignment.due);
+      setAvailableFrom(existingAssignment.availableFrom);
+      setAvailableUntil(existingAssignment.availableUntil);
+    }
+  }, [existingAssignment]);
+
+  const handleSave = () => {
+    const assignmentData = {
+      _id: existingAssignment ? existingAssignment._id : uuidv4(),
+      course: cid,
+      title,
+      description,
+      points,
+      due,
+      availableFrom,
+      availableUntil,
+    };
+
+    if (existingAssignment) {
+      dispatch(updateAssignment(assignmentData));
+    } else {
+      dispatch(addAssignment(assignmentData));
+    }
+
+    navigate(`/Kambaz/Courses/${cid}/Assignments`);
+  };
 
   return (
     <div id="wd-assignments-editor" className="p-4">
       <Form>
         <Form.Group className="mb-3" controlId="wd-name">
           <Form.Label>Assignment Name</Form.Label>
-          <Form.Control type="text" defaultValue={assignment?.title || ""} />
+          <Form.Control
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="wd-description">
@@ -21,7 +70,8 @@ export default function AssignmentEditor() {
           <Form.Control
             as="textarea"
             rows={6}
-            defaultValue="The assignment is available online. Submit a link to the landing page of your Web application running on Netlify."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </Form.Group>
 
@@ -29,14 +79,18 @@ export default function AssignmentEditor() {
           <Col md={4}>
             <Form.Group controlId="wd-points">
               <Form.Label>Points</Form.Label>
-              <Form.Control type="number" defaultValue={100} />
+              <Form.Control
+                type="number"
+                value={points}
+                onChange={(e) => setPoints(Number(e.target.value))}
+              />
             </Form.Group>
           </Col>
 
           <Col md={4}>
             <Form.Group controlId="wd-group">
               <Form.Label>Assignment Group</Form.Label>
-              <Form.Select>
+              <Form.Select defaultValue="ASSIGNMENTS">
                 <option>ASSIGNMENTS</option>
               </Form.Select>
             </Form.Group>
@@ -45,7 +99,7 @@ export default function AssignmentEditor() {
           <Col md={4}>
             <Form.Group controlId="wd-display-grade-as">
               <Form.Label>Display Grade as</Form.Label>
-              <Form.Select>
+              <Form.Select defaultValue="Percentage">
                 <option>Percentage</option>
               </Form.Select>
             </Form.Group>
@@ -54,34 +108,17 @@ export default function AssignmentEditor() {
 
         <Form.Group className="mb-3" controlId="wd-submission-type">
           <Form.Label>Submission Type</Form.Label>
-          <Form.Select className="mb-2">
+          <Form.Select className="mb-2" defaultValue="Online">
             <option>Online</option>
           </Form.Select>
 
           <div className="border p-3 rounded">
             <div className="fw-bold mb-2">Online Entry Options</div>
             <Form.Check type="checkbox" label="Text Entry" id="wd-text-entry" />
-            <Form.Check
-              type="checkbox"
-              label="Website URL"
-              id="wd-website-url"
-              defaultChecked
-            />
-            <Form.Check
-              type="checkbox"
-              label="Media Recordings"
-              id="wd-media-recordings"
-            />
-            <Form.Check
-              type="checkbox"
-              label="Student Annotation"
-              id="wd-student-annotation"
-            />
-            <Form.Check
-              type="checkbox"
-              label="File Uploads"
-              id="wd-file-upload"
-            />
+            <Form.Check type="checkbox" label="Website URL" id="wd-website-url" defaultChecked />
+            <Form.Check type="checkbox" label="Media Recordings" id="wd-media-recordings" />
+            <Form.Check type="checkbox" label="Student Annotation" id="wd-student-annotation" />
+            <Form.Check type="checkbox" label="File Uploads" id="wd-file-upload" />
           </div>
         </Form.Group>
 
@@ -96,7 +133,8 @@ export default function AssignmentEditor() {
               <Form.Label>Due</Form.Label>
               <Form.Control
                 type="datetime-local"
-                defaultValue="2025-07-07T23:59"
+                value={due}
+                onChange={(e) => setDue(e.target.value)}
               />
             </Form.Group>
           </Col>
@@ -105,7 +143,8 @@ export default function AssignmentEditor() {
               <Form.Label>Available from</Form.Label>
               <Form.Control
                 type="datetime-local"
-                defaultValue="2025-07-07T00:00"
+                value={availableFrom}
+                onChange={(e) => setAvailableFrom(e.target.value)}
               />
             </Form.Group>
           </Col>
@@ -114,7 +153,8 @@ export default function AssignmentEditor() {
               <Form.Label>Until</Form.Label>
               <Form.Control
                 type="datetime-local"
-                defaultValue="2025-07-10T23:59"
+                value={availableUntil}
+                onChange={(e) => setAvailableUntil(e.target.value)}
               />
             </Form.Group>
           </Col>
@@ -127,12 +167,9 @@ export default function AssignmentEditor() {
           >
             Cancel
           </Link>
-          <Link
-            to={`/Kambaz/Courses/${cid}/Assignments`}
-            className="btn btn-danger"
-          >
+          <Button className="btn btn-danger" onClick={handleSave}>
             Save
-          </Link>
+          </Button>
         </div>
       </Form>
     </div>
