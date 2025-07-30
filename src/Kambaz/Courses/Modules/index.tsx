@@ -58,7 +58,7 @@ export default function Modules() {
                   moduleId={module._id}
                   deleteModule={(moduleId) => dispatch(deleteModule(moduleId))}
                   editModule={(moduleId) => dispatch(editModule(moduleId))}
-                  saveModule={(moduleId) => dispatch(updateModule({ ...module, editing: false }))}
+                  // saveModule={(moduleId) => dispatch(updateModule({ ...module, editing: false }))}
                 />
               </div>
               {module.lessons && (
