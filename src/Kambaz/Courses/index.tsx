@@ -7,7 +7,18 @@ import { Navigate, Route, Routes, useParams, useLocation } from "react-router";
 import { FaAlignJustify } from "react-icons/fa";
 import PeopleTable from "./People/Table";
 
-export default function Courses({ courses }: { courses: any[]; }) {
+type Course = {
+  _id: string;
+  name: string;
+  number: string,
+  startDate: string,
+  endDate: string,
+  department: string,
+  credits: number,
+  description: string,
+};
+
+export default function Courses({ courses }: { courses: Course[]; }) {
   const { cid } = useParams(); 
   const course = courses.find((course) => course._id === cid);
   const { pathname } = useLocation();

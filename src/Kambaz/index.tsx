@@ -1,40 +1,41 @@
 import { useState } from "react";
-import * as db from "./Database";
+import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import { Routes, Route, Navigate } from "react-router";
 import Account from "./Account";
 import Dashboard from "./Dashboard";
 import KambazNavigation from "./Navigation";
 import Courses from "./Courses";
-import "./styles.css";
 import ProtectedRoute from "./Account/ProtectedRoute";
+import { addCourse, deleteCourse, updateCourse } from "./Courses/reducer";
+import "./styles.css";
+import ProtectedCourseRoute from "./Courses/ProtectedCourseRoute";
 
 export default function Kambaz() {
-  const [courses, setCourses] = useState<any[]>(db.courses);
-  const [course, setCourse] = useState<any>({
-    _id: "1234",
-    name: "New Course",
-    number: "New Number",
-    startDate: "2023-09-10",
-    endDate: "2023-12-15",
-    description: "New Description",
+  const dispatch = useDispatch();
+  const courses = useSelector((state: { courses: { courses: any[] } }) => state.courses.courses);
+
+  const [course, setCourse] = useState({
+    _id: "",
+    name: "",
+    number: "",
+    startDate: "",
+    endDate: "",
+    department: "",
+    credits: 0,
+    description: "",
   });
-  const addNewCourse = () => {
-    setCourses([...courses, { ...course, _id: uuidv4() }]);
+
+  const handleAddCourse = () => {
+    dispatch(addCourse({ ...course, _id: uuidv4() }));
   };
-  const deleteCourse = (courseId: any) => {
-    setCourses(courses.filter((course) => course._id !== courseId));
+
+  const handleDeleteCourse = (id: string) => {
+    dispatch(deleteCourse(id));
   };
-  const updateCourse = () => {
-    setCourses(
-      courses.map((c) => {
-        if (c._id === course._id) {
-          return course;
-        } else {
-          return c;
-        }
-      })
-    );
+
+  const handleUpdateCourse = () => {
+    dispatch(updateCourse(course));
   };
 
   return (
@@ -42,29 +43,33 @@ export default function Kambaz() {
       <KambazNavigation />
       <div className="wd-main-content-offset p-3">
         <Routes>
-          <Route path="/" element={<Navigate to="/Kambaz/Account" />} />
-          <Route path="/Account/*" element={<Account />} />
+          <Route path="/" element={<Navigate to="Dashboard" />} />
+          <Route path="Account/*" element={<Account />} />
           <Route
-            path="/Dashboard"
+            path="Dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard
                   courses={courses}
                   course={course}
                   setCourse={setCourse}
-                  addNewCourse={addNewCourse}
-                  deleteCourse={deleteCourse}
-                  updateCourse={updateCourse}
+                  addNewCourse={handleAddCourse}
+                  deleteCourse={handleDeleteCourse}
+                  updateCourse={handleUpdateCourse}
                 />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/Courses/:cid/*"
-            element={<Courses courses={courses} />}
+            path="Courses/:cid/*"
+            element={
+              <ProtectedCourseRoute>
+                  <Courses courses={courses} />
+              </ProtectedCourseRoute>
+            }
           />
-          <Route path="/Calendar" element={<h1>Calendar</h1>} />
-          <Route path="/Inbox" element={<h1>Inbox</h1>} />
+          <Route path="Calendar" element={<h1>Calendar</h1>} />
+          <Route path="Inbox" element={<h1>Inbox</h1>} />
         </Routes>
       </div>
     </div>

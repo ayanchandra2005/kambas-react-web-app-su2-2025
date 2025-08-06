@@ -8,12 +8,11 @@ export default function LessonControlButtons({
   moduleId,
   deleteModule,
   editModule,
-  saveModule,
 }: {
   moduleId: string;
   deleteModule: (moduleId: string) => void;
   editModule: (moduleId: string) => void;
-  saveModule?: (moduleId: string) => void;
+  // saveModule?: (moduleId: string) => void;
 }) {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const isFaculty = currentUser?.role === "FACULTY";
@@ -30,9 +29,8 @@ export default function LessonControlButtons({
             className="text-danger me-2 mb-1"
             onClick={() => deleteModule(moduleId)}
           />
-          {saveModule && (
-            <GreenCheckmark onClick={() => saveModule(moduleId)} />
-          )}
+            <GreenCheckmark 
+          />
         </>
       )}
       <IoEllipsisVertical className="fs-4" />
