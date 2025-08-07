@@ -3,8 +3,8 @@ import { Button, FormControl, InputGroup, ListGroup } from "react-bootstrap";
 import { FaSearch, FaPlus, FaCheckCircle, FaRegFileAlt, FaTrash } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { RxDragHandleDots2 } from "react-icons/rx";
-import { useSelector, useDispatch } from "react-redux";
-import { deleteAssignment } from "./reducer";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function formatDateTime(dateString: string) {
   const date = new Date(dateString);
@@ -20,18 +20,32 @@ function formatDateTime(dateString: string) {
 
 export default function Assignments() {
   const { cid } = useParams();
-  const dispatch = useDispatch();
+  const [assignments, setAssignments] = useState([]);
 
-  const assignments = useSelector((state: any) =>
-    state.assignmentsReducer.assignments.filter((a: any) => a.course === cid)
-  );
-
-  const handleDelete = (aid: string) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this assignment?");
-    if (confirmDelete) {
-      dispatch(deleteAssignment(aid));
+  const fetchAssignments = async () => {
+    try {
+      const res = await axios.get(`http://localhost:4000/api/courses/${cid}/assignments`);
+      setAssignments(res.data);
+    } catch (err) {
+      console.error("Failed to fetch assignments", err);
     }
   };
+
+  const handleDelete = async (aid: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this assignment?");
+    if (confirmDelete) {
+      try {
+        await axios.delete(`http://localhost:4000/api/assignments/${aid}`);
+        setAssignments(assignments.filter((a: any) => a._id !== aid));
+      } catch (err) {
+        console.error("Delete failed", err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [cid]);
 
   return (
     <div id="wd-assignments" className="p-4">

@@ -1,18 +1,15 @@
 import { Form, Row, Col, Button } from "react-bootstrap";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { addAssignment, updateAssignment } from "./reducer";
+import {
+  getAssignmentDetails,
+  addNewAssignment,
+  editAssignment,
+} from "./clients.ts";
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const existingAssignment = useSelector((state: any) =>
-    state.assignmentsReducer.assignments.find((a: any) => a._id === aid)
-  );
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -22,19 +19,30 @@ export default function AssignmentEditor() {
   const [availableUntil, setAvailableUntil] = useState("2025-07-10T23:59");
 
   useEffect(() => {
-    if (existingAssignment) {
-      setTitle(existingAssignment.title);
-      setDescription(existingAssignment.description);
-      setPoints(existingAssignment.points);
-      setDue(existingAssignment.due);
-      setAvailableFrom(existingAssignment.availableFrom);
-      setAvailableUntil(existingAssignment.availableUntil);
-    }
-  }, [existingAssignment]);
+    const fetchAssignment = async () => {
+      if (aid) {
+        try {
+          console.log(`Fetching assignment details for ID: ${aid}`);
+          const assignment = await getAssignmentDetails(aid);
+          setTitle(assignment.title);
+          setDescription(assignment.description);
+          setPoints(assignment.points);
+          setDue(assignment.due);
+          setAvailableFrom(assignment.availableFrom);
+          setAvailableUntil(assignment.availableUntil);
+        } catch (err: any) {
+          console.error(
+            "Failed to fetch assignment:",
+            err?.response?.data || err.message
+          );
+        }
+      }
+    };
+    fetchAssignment();
+  }, [aid]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const assignmentData = {
-      _id: existingAssignment ? existingAssignment._id : uuidv4(),
       course: cid,
       title,
       description,
@@ -44,13 +52,28 @@ export default function AssignmentEditor() {
       availableUntil,
     };
 
-    if (existingAssignment) {
-      dispatch(updateAssignment(assignmentData));
-    } else {
-      dispatch(addAssignment(assignmentData));
-    }
+    try {
+      console.log("Saving assignment with data:", assignmentData);
 
-    navigate(`/Kambaz/Courses/${cid}/Assignments`);
+      if (aid) {
+        console.log(`PUT /api/assignments/${aid}`);
+        await editAssignment({ _id: aid, ...assignmentData });
+      } else {
+        if (!cid) {
+          console.error("Course ID is undefined");
+          return;
+        }
+        console.log(`POST /api/courses/${cid}/assignments`);
+        await addNewAssignment(cid, assignmentData);
+      }
+
+      navigate(`/Kambaz/Courses/${cid}/Assignments`);
+    } catch (err: any) {
+      console.error(
+        "Failed to save assignment:",
+        err?.response?.data || err.message
+      );
+    }
   };
 
   return (
@@ -115,10 +138,27 @@ export default function AssignmentEditor() {
           <div className="border p-3 rounded">
             <div className="fw-bold mb-2">Online Entry Options</div>
             <Form.Check type="checkbox" label="Text Entry" id="wd-text-entry" />
-            <Form.Check type="checkbox" label="Website URL" id="wd-website-url" defaultChecked />
-            <Form.Check type="checkbox" label="Media Recordings" id="wd-media-recordings" />
-            <Form.Check type="checkbox" label="Student Annotation" id="wd-student-annotation" />
-            <Form.Check type="checkbox" label="File Uploads" id="wd-file-upload" />
+            <Form.Check
+              type="checkbox"
+              label="Website URL"
+              id="wd-website-url"
+              defaultChecked
+            />
+            <Form.Check
+              type="checkbox"
+              label="Media Recordings"
+              id="wd-media-recordings"
+            />
+            <Form.Check
+              type="checkbox"
+              label="Student Annotation"
+              id="wd-student-annotation"
+            />
+            <Form.Check
+              type="checkbox"
+              label="File Uploads"
+              id="wd-file-upload"
+            />
           </div>
         </Form.Group>
 
