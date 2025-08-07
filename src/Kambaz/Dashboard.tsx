@@ -7,7 +7,7 @@ import {
   getUserEnrollments,
   enrollUserInCourse,
   unenrollUserFromCourse,
-} from "/Users/ayan/2025/summer2/webdev/kambas-react-web-app-su2-2025/src/Kambaz/Courses/People/enrollments.ts";
+} from "./Courses/People/enrollments.ts";
 
 export default function Dashboard({
   courses,
