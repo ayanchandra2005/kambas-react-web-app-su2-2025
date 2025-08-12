@@ -4,15 +4,22 @@ import { useSelector } from "react-redux";
 export default function AccountNavigation() {
   const location = useLocation();
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const links = currentUser
+
+  // build the nav list
+  const links: { name: string; path: string }[] = currentUser
     ? [{ name: "Profile", path: "/Kambaz/Account/Profile" }]
     : [
         { name: "Signin", path: "/Kambaz/Account/Signin" },
         { name: "Signup", path: "/Kambaz/Account/Signup" },
       ];
 
+  // only admins see "Users"
+  if (currentUser && currentUser.role === "ADMIN") {
+    links.push({ name: "Users", path: "/Kambaz/Account/Users" });
+  }
+
   return (
-    <div className="d-flex flex-column">
+    <div className="d-flex flex-column" id="wd-account-navigation">
       {links.map(({ name, path }) => {
         const isActive = location.pathname === path;
         return (
@@ -21,7 +28,6 @@ export default function AccountNavigation() {
             className="d-flex align-items-center mb-2"
             style={{ fontWeight: isActive ? "bold" : "normal" }}
           >
-            {/* Vertical Bar */}
             <div
               style={{
                 width: "4px",
