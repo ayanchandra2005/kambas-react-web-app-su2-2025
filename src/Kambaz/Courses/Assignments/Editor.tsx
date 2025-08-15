@@ -5,7 +5,7 @@ import {
   getAssignmentDetails,
   addNewAssignment,
   editAssignment,
-} from "./clients.ts";
+} from "./clients";
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
@@ -20,28 +20,28 @@ export default function AssignmentEditor() {
 
   useEffect(() => {
     const fetchAssignment = async () => {
-      if (aid) {
-        try {
-          console.log(`Fetching assignment details for ID: ${aid}`);
-          const assignment = await getAssignmentDetails(aid);
-          setTitle(assignment.title);
-          setDescription(assignment.description);
-          setPoints(assignment.points);
-          setDue(assignment.due);
-          setAvailableFrom(assignment.availableFrom);
-          setAvailableUntil(assignment.availableUntil);
-        } catch (err: any) {
-          console.error(
-            "Failed to fetch assignment:",
-            err?.response?.data || err.message
-          );
-        }
+      if (!aid) return;
+      try {
+        const assignment = await getAssignmentDetails(aid);
+        setTitle(assignment.title ?? "");
+        setDescription(assignment.description ?? "");
+        setPoints(assignment.points ?? 100);
+        setDue(assignment.due ?? "2025-07-07T23:59");
+        setAvailableFrom(assignment.availableFrom ?? "2025-07-07T00:00");
+        setAvailableUntil(assignment.availableUntil ?? "2025-07-10T23:59");
+      } catch (err: any) {
+        console.error("Failed to fetch assignment:", err?.response?.data || err.message);
       }
     };
     fetchAssignment();
   }, [aid]);
 
   const handleSave = async () => {
+    if (!cid) {
+      console.error("Course ID is undefined");
+      return;
+    }
+
     const assignmentData = {
       course: cid,
       title,
@@ -53,26 +53,14 @@ export default function AssignmentEditor() {
     };
 
     try {
-      console.log("Saving assignment with data:", assignmentData);
-
       if (aid) {
-        console.log(`PUT /api/assignments/${aid}`);
         await editAssignment({ _id: aid, ...assignmentData });
       } else {
-        if (!cid) {
-          console.error("Course ID is undefined");
-          return;
-        }
-        console.log(`POST /api/courses/${cid}/assignments`);
         await addNewAssignment(cid, assignmentData);
       }
-
       navigate(`/Kambaz/Courses/${cid}/Assignments`);
     } catch (err: any) {
-      console.error(
-        "Failed to save assignment:",
-        err?.response?.data || err.message
-      );
+      console.error("Failed to save assignment:", err?.response?.data || err.message);
     }
   };
 
@@ -138,27 +126,10 @@ export default function AssignmentEditor() {
           <div className="border p-3 rounded">
             <div className="fw-bold mb-2">Online Entry Options</div>
             <Form.Check type="checkbox" label="Text Entry" id="wd-text-entry" />
-            <Form.Check
-              type="checkbox"
-              label="Website URL"
-              id="wd-website-url"
-              defaultChecked
-            />
-            <Form.Check
-              type="checkbox"
-              label="Media Recordings"
-              id="wd-media-recordings"
-            />
-            <Form.Check
-              type="checkbox"
-              label="Student Annotation"
-              id="wd-student-annotation"
-            />
-            <Form.Check
-              type="checkbox"
-              label="File Uploads"
-              id="wd-file-upload"
-            />
+            <Form.Check type="checkbox" label="Website URL" id="wd-website-url" defaultChecked />
+            <Form.Check type="checkbox" label="Media Recordings" id="wd-media-recordings" />
+            <Form.Check type="checkbox" label="Student Annotation" id="wd-student-annotation" />
+            <Form.Check type="checkbox" label="File Uploads" id="wd-file-upload" />
           </div>
         </Form.Group>
 
@@ -201,10 +172,7 @@ export default function AssignmentEditor() {
         </Row>
 
         <div className="d-flex justify-content-end gap-2">
-          <Link
-            to={`/Kambaz/Courses/${cid}/Assignments`}
-            className="btn btn-secondary"
-          >
+          <Link to={`/Kambaz/Courses/${cid}/Assignments`} className="btn btn-secondary">
             Cancel
           </Link>
           <Button className="btn btn-danger" onClick={handleSave}>

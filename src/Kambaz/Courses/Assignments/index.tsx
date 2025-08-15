@@ -4,7 +4,10 @@ import { FaSearch, FaPlus, FaCheckCircle, FaRegFileAlt, FaTrash } from "react-ic
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { RxDragHandleDots2 } from "react-icons/rx";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  getAssignmentsByCourse,
+  removeAssignment,
+} from "./clients";
 
 function formatDateTime(dateString: string) {
   const date = new Date(dateString);
@@ -20,12 +23,13 @@ function formatDateTime(dateString: string) {
 
 export default function Assignments() {
   const { cid } = useParams();
-  const [assignments, setAssignments] = useState([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
 
   const fetchAssignments = async () => {
+    if (!cid) return;
     try {
-      const res = await axios.get(`http://localhost:4000/api/courses/${cid}/assignments`);
-      setAssignments(res.data);
+      const data = await getAssignmentsByCourse(cid);
+      setAssignments(data);
     } catch (err) {
       console.error("Failed to fetch assignments", err);
     }
@@ -33,13 +37,12 @@ export default function Assignments() {
 
   const handleDelete = async (aid: string) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this assignment?");
-    if (confirmDelete) {
-      try {
-        await axios.delete(`http://localhost:4000/api/assignments/${aid}`);
-        setAssignments(assignments.filter((a: any) => a._id !== aid));
-      } catch (err) {
-        console.error("Delete failed", err);
-      }
+    if (!confirmDelete) return;
+    try {
+      await removeAssignment(aid);
+      setAssignments((prev) => prev.filter((a: any) => a._id !== aid));
+    } catch (err) {
+      console.error("Delete failed", err);
     }
   };
 
@@ -54,10 +57,7 @@ export default function Assignments() {
           <InputGroup.Text>
             <FaSearch />
           </InputGroup.Text>
-          <FormControl
-            placeholder="Search for Assignments"
-            id="wd-search-assignment"
-          />
+          <FormControl placeholder="Search for Assignments" id="wd-search-assignment" />
         </InputGroup>
 
         <div>
@@ -65,10 +65,7 @@ export default function Assignments() {
             <FaPlus className="me-1" />
             Group
           </Button>
-          <Link
-            to={`/Kambaz/Courses/${cid}/Assignments/Editor`}
-            className="btn btn-danger"
-          >
+          <Link to={`/Kambaz/Courses/${cid}/Assignments/Editor`} className="btn btn-danger">
             <FaPlus className="me-1" />
             Assignment
           </Link>
@@ -112,8 +109,7 @@ export default function Assignments() {
                   <span className="text-danger">Multiple Modules</span> |{" "}
                   <b>Not available until</b>{" "}
                   {a.availableFrom ? formatDateTime(a.availableFrom) : "TBD"} |{" "}
-                  <b>Due</b> {a.due ? formatDateTime(a.due) : "TBD"} |{" "}
-                  {a.points || 100} pts
+                  <b>Due</b> {a.due ? formatDateTime(a.due) : "TBD"} | {a.points || 100} pts
                 </div>
               </div>
             </div>
