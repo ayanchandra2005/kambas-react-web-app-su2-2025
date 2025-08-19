@@ -7,3 +7,4 @@ export default function ProtectedRoute({ children }: { children: any }) {
   } else {
     return <Navigate to="/Kambaz/Account/Signin" />;
 }}
+

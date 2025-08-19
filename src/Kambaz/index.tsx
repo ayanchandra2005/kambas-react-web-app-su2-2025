@@ -46,21 +46,47 @@ export default function Kambaz() {
     setCourses((prev) => prev.filter((c) => c._id !== courseId));
   };
 
-  // 👇 NEW: just my courses
+  // // 👇 NEW: just my courses
+  // const findCoursesForUser = async () => {
+  //   if (!currentUser?._id) return;
+  //   const mine = await userClient.findCoursesForUser(currentUser._id);
+  //   setCourses(mine);
+  // };
+
   const findCoursesForUser = async () => {
     if (!currentUser?._id) return;
     const mine = await userClient.findCoursesForUser(currentUser._id);
-    setCourses(mine);
+    setCourses(
+      (mine || [])
+        .filter(Boolean)                        // drop nulls
+        .map((c: any) => ({ ...c, enrolled: true })) // add enrolled flag
+    );
   };
 
   // 👇 NEW: all courses, and mark which ones I’m enrolled in
+  // const fetchCourses = async () => {
+  //   if (!currentUser?._id) return;
+  //   const all = await courseClient.fetchAllCourses();
+  //   const mine = await userClient.findCoursesForUser(currentUser._id);
+  //   const withFlags = all.map((c: any) =>
+  //     mine.find((m: any) => m._id === c._id) ? { ...c, enrolled: true } : c
+  //   );
+  //   setCourses(withFlags);
+  // };
+
   const fetchCourses = async () => {
     if (!currentUser?._id) return;
     const all = await courseClient.fetchAllCourses();
     const mine = await userClient.findCoursesForUser(currentUser._id);
-    const withFlags = all.map((c: any) =>
-      mine.find((m: any) => m._id === c._id) ? { ...c, enrolled: true } : c
+  
+    const mineIds = new Set(
+      (mine || []).filter(Boolean).map((m: any) => m._id)
     );
+  
+    const withFlags = (all || [])
+      .filter(Boolean)                            // drop nulls
+      .map((c: any) => ({ ...c, enrolled: mineIds.has(c._id) }));
+  
     setCourses(withFlags);
   };
 
