@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Button } from "react-bootstrap";
 import { getQuizDetails } from "./client";
+import { publishQuiz, unpublishQuiz } from "./client";
+
 
 function fmt(date?: string) {
   if (!date) return "—";
@@ -23,6 +25,8 @@ export default function QuizDetails() {
 
   const [quiz, setQuiz] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -53,6 +57,22 @@ export default function QuizDetails() {
   if (loading) return <div className="p-4 text-muted">Loading quiz…</div>;
   if (!quiz) return <div className="p-4 text-muted">Quiz not found.</div>;
 
+  const togglePublish = async () => {
+    if (!qid) return;
+    setPublishing(true);
+    try {
+      if (quiz?.published) {
+        await unpublishQuiz(qid);
+        setQuiz((q: any) => ({ ...q, published: false }));
+      } else {
+        await publishQuiz(qid);
+        setQuiz((q: any) => ({ ...q, published: true }));
+      }
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <div id="wd-quiz-details" className="p-3">
       {/* Top actions */}
@@ -75,6 +95,15 @@ export default function QuizDetails() {
             >
               <span className="me-1">✎</span> Edit
             </Button>
+            {/* NEW: Publish / Unpublish */}
+          <Button
+            id="wd-publish-toggle"
+            variant={quiz?.published ? "outline-secondary" : "success"}
+            onClick={togglePublish}
+            disabled={publishing}
+          >
+            {publishing ? "Saving..." : quiz?.published ? "Unpublish" : "Publish"}
+          </Button>
           </>
         ) : (
           <Button
