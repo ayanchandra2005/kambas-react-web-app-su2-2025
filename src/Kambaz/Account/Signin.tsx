@@ -54,22 +54,6 @@ export default function Signin() {
             Sign-up
           </Link>
         </div>
-
-        {/* --- Team / Project Info link --- */}
-        <div className="p-3 border rounded bg-light">
-          <div className="fw-semibold mb-1">Project: Quizzes</div>
-          <div className="small text-muted">
-            Members: Ayan Chandra & Hudson Kass
-          </div>
-          <div className="small text-muted">
-            Front-end Repository:
-            github.com/ayanchandra2005/kambas-react-web-app-su2-2025
-          </div>
-          <div className="small text-muted">
-            Back-end Repository:
-            github.com/ayanchandra2005/kambaz-node-server-app
-          </div>
-        </div>
       </Form>
     </div>
   );
